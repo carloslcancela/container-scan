@@ -1074,5 +1074,3 @@ GitHub Actions
        ▼
  GitHub Artifact
 ```
-
-O laboratório começa simples, mas foi desenhado para evoluir para uma **arquitetura de DevSecOps em escala**, permitindo estudar não apenas as ferramentas, mas também os conceitos de **governança, automação, padronização e segurança da cadeia de software**.
