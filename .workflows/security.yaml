@@ -48,3 +48,32 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: 1
+
+ sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t devsecops-lab:${{ github.sha }} \
+            .
+
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: devsecops-lab:${{ github.sha }}
+          format: cyclonedx
+          output: sbom.json
+          scanners: vuln
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-sbom
+          path: sbom.json
