@@ -11,7 +11,6 @@ permissions:
   security-events: write
 
 jobs:
-
   sca:
     name: SCA - Dependency Scan
     runs-on: ubuntu-latest
@@ -28,18 +27,23 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
 
-  container:
-    name: Container Security Scan
+  container_security:
+    name: Container Security Scan and SBOM
+    needs: sca
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Build Docker Image
         run: |
           docker build \
             -t devsecops-lab:${{ github.sha }} \
             .
+
       - name: Scan Container
+        id: container_scan
+        continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: devsecops-lab:${{ github.sha }}
@@ -48,21 +52,6 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: 1
-
-  sbom:
-    name: Generate SBOM
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build Docker Image
-        run: |
-          docker build \
-            -t devsecops-lab:${{ github.sha }} \
-            .
 
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@v0.36.0
@@ -77,3 +66,7 @@ jobs:
         with:
           name: container-sbom
           path: sbom.json
+
+      - name: Enforce Container Security Gate
+        if: steps.container_scan.outcome == 'failure'
+        run: exit 1
