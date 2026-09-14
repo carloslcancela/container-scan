@@ -1,6 +1,6 @@
 # DevSecOps Container Security Lab
 
-Laboratório prático para estudar a implementação de **DevSecOps em GitHub Actions**, com foco em:
+Laboratório prático para a implementação de **DevSecOps em GitHub Actions**, com foco em:
 
 - SCA (Software Composition Analysis)
 - Container Image Scanning
@@ -12,8 +12,6 @@ Laboratório prático para estudar a implementação de **DevSecOps em GitHub Ac
 - GitHub Artifacts
 - Evolução posterior para SARIF / GitHub Code Scanning
 - Evolução posterior para Reusable Workflows e governança em escala
-
-O laboratório foi desenhado para funcionar **sem necessidade de Azure, AWS, Kubernetes ou uma máquina virtual própria**.
 
 ---
 
