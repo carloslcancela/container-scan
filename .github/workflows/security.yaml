@@ -49,7 +49,7 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
 
- sbom:
+  sbom:
     name: Generate SBOM
     runs-on: ubuntu-latest
 
