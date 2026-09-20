@@ -1,0 +1,669 @@
+Container Platform Security Mandate
+
+1. Objetivo
+
+Estabelecer os requisitos corporativos obrigatórios de segurança para plataformas de orquestração e execução de containers durante todo o seu ciclo de vida, contemplando proteção do plano de controle, workloads, identidades, infraestrutura, rede, imagens, dados, observabilidade e execução em runtime.
+
+Este mandate define capacidades mínimas de segurança, independentemente da tecnologia utilizada para implementá-las.
+
+Os requisitos aplicam-se a plataformas gerenciadas, autogerenciadas, on-premises ou em cloud.
+
+Tecnologias como Kubernetes, AKS, EKS, Azure Red Hat OpenShift e OpenShift são implementações sujeitas a este mandate, não sendo o objeto específico do documento.
+
+⸻
+
+2. Princípio arquitetural
+
+Plataformas de containers devem ser projetadas e operadas segundo princípios de:
+
+* Zero Trust;
+* least privilege;
+* defense in depth;
+* secure by default;
+* separation of duties;
+* immutable infrastructure;
+* observabilidade e rastreabilidade;
+* redução de superfície de ataque;
+* proteção durante build, deploy e runtime.
+
+Controles de segurança devem ser aplicados preferencialmente de maneira centralizada, automatizada e preventiva, reduzindo dependência de configuração manual pelas aplicações consumidoras.
+
+⸻
+
+3. Domínios mandatórios de segurança
+
+3.1 Identidade, autenticação e autorização
+
+Diretriz
+
+Plataformas de containers devem utilizar mecanismos corporativos de identidade para autenticação de usuários humanos.
+
+A autorização deve seguir modelos baseados em papéis e menor privilégio.
+
+Sempre que tecnicamente suportado:
+
+* identidades corporativas devem substituir contas locais;
+* acessos devem ser concedidos através de grupos e funções;
+* privilégios administrativos devem possuir escopo limitado;
+* acessos privilegiados em ambientes críticos devem utilizar elevação temporária;
+* contas administrativas permanentes devem ser minimizadas;
+* contas locais de emergência devem possuir tratamento de break-glass.
+
+Identidades de workloads e automações devem utilizar mecanismos de identidade federada ou equivalente sempre que possível, evitando credenciais estáticas de longa duração.
+
+Justificativa
+
+A centralização de identidade permite governança, revogação, recertificação, MFA, rastreabilidade e redução de privilégios permanentes.
+
+⸻
+
+3.2 Proteção do plano de controle
+
+Diretriz
+
+O plano de controle da plataforma deve possuir proteção compatível com sua criticidade.
+
+Interfaces administrativas e APIs de gerenciamento não devem ser expostas diretamente à Internet, exceto quando formalmente justificadas e protegidas por controles adicionais.
+
+Devem existir controles para proteger:
+
+* APIs administrativas;
+* datastore da plataforma;
+* comunicação entre componentes;
+* certificados e material criptográfico;
+* interfaces de gerenciamento;
+* operações administrativas.
+
+Comunicações com o plano de controle devem utilizar criptografia em trânsito.
+
+Dados sensíveis mantidos pelo plano de controle devem possuir proteção criptográfica em repouso.
+
+Justificativa
+
+O comprometimento do plano de controle pode permitir alteração de workloads, acesso a secrets, criação de privilégios e comprometimento sistêmico da plataforma.
+
+⸻
+
+3.3 Hardening de workloads
+
+Diretriz
+
+Workloads devem operar com o menor conjunto possível de privilégios.
+
+A plataforma deve possuir mecanismos capazes de restringir ou impedir workloads com configurações inseguras.
+
+Devem ser controlados, de acordo com a criticidade do workload:
+
+* execução privilegiada;
+* execução como root;
+* privilege escalation;
+* capabilities do sistema operacional;
+* acesso ao filesystem do host;
+* compartilhamento de namespaces do host;
+* dispositivos do host;
+* montagem de volumes sensíveis;
+* permissões de escrita desnecessárias;
+* perfis de segurança do kernel.
+
+Configurações inseguras devem ser bloqueadas preventivamente sempre que tecnicamente possível.
+
+Justificativa
+
+Containers excessivamente privilegiados aumentam o impacto potencial de comprometimentos e podem facilitar movimentação do container para o host ou para outros workloads.
+
+⸻
+
+3.4 Admission Control e Policy Enforcement
+
+Diretriz
+
+A plataforma deve possuir capacidade centralizada de avaliar configurações de workloads antes de sua execução.
+
+Políticas corporativas de segurança devem poder ser aplicadas de maneira preventiva durante o processo de admissão.
+
+O mecanismo deve permitir bloquear, restringir ou identificar configurações que violem requisitos corporativos.
+
+As políticas devem ser versionadas, auditáveis e administradas através de processo controlado de mudança.
+
+Justificativa
+
+Controles preventivos evitam que configurações inseguras sejam implantadas e reduzem a dependência de identificação posterior por mecanismos reativos.
+
+⸻
+
+3.5 Segurança de rede e comunicação
+
+Diretriz
+
+Comunicações entre workloads, plataformas e serviços externos devem seguir princípios de menor privilégio e segmentação.
+
+A plataforma deve possuir capacidade de controlar comunicações:
+
+* workload-to-workload;
+* namespace-to-namespace;
+* workload-to-external;
+* external-to-workload;
+* workload-to-control-plane;
+* workload-to-cloud metadata services.
+
+Ambientes devem adotar postura restritiva por padrão sempre que tecnicamente aplicável.
+
+Comunicações contendo informações sensíveis devem possuir criptografia em trânsito.
+
+Serviços administrativos não devem possuir exposição pública desnecessária.
+
+Justificativa
+
+A segmentação limita movimentação lateral, comunicação não autorizada e exfiltração de dados após o comprometimento de um workload.
+
+⸻
+
+3.6 Secrets e material criptográfico
+
+Diretriz
+
+Credenciais, tokens, certificados, chaves e outros dados confidenciais não devem ser armazenados diretamente:
+
+* em imagens de container;
+* em código-fonte;
+* em pipelines;
+* em manifests;
+* em ConfigMaps ou mecanismos equivalentes destinados a configurações não confidenciais.
+
+A plataforma deve integrar-se a mecanismos corporativos de gestão de secrets sempre que possível.
+
+Secrets devem possuir:
+
+* criptografia em repouso;
+* controle de acesso;
+* rastreabilidade;
+* processo de rotação;
+* revogação;
+* exposição limitada somente aos workloads que necessitem utilizá-los.
+
+Justificativa
+
+Credenciais estáticas ou expostas podem permitir comprometimento persistente mesmo após a correção do workload originalmente afetado.
+
+⸻
+
+3.7 Segurança de imagens e registries
+
+Diretriz
+
+Imagens executadas em ambientes corporativos devem possuir origem identificável e controlada.
+
+A plataforma deve permitir a execução somente de imagens provenientes de registries aprovados ou explicitamente autorizados.
+
+Devem existir capacidades para:
+
+* análise de vulnerabilidades;
+* identificação de componentes;
+* controle de imagens não confiáveis;
+* identificação de imagens obsoletas;
+* controle de artefatos maliciosos;
+* manutenção da rastreabilidade entre aplicação, imagem e origem.
+
+Para workloads críticos, mecanismos de integridade e autenticidade das imagens devem ser adotados quando tecnicamente suportados.
+
+Justificativa
+
+O comprometimento de uma imagem ou de sua cadeia de distribuição pode introduzir código malicioso antes mesmo da execução da aplicação.
+
+⸻
+
+3.8 Software Supply Chain
+
+Diretriz
+
+A organização deve possuir mecanismos que permitam rastrear a origem dos artefatos executados na plataforma.
+
+O processo de construção e publicação deve permitir identificar:
+
+* código de origem;
+* dependências;
+* pipeline responsável;
+* imagem produzida;
+* registry de destino;
+* versão implantada;
+* ambiente onde o artefato está executando.
+
+Devem existir capacidades de análise de vulnerabilidades e componentes de terceiros ao longo do ciclo de desenvolvimento.
+
+Quando definido pela política corporativa, artefatos deverão possuir SBOM e mecanismos de comprovação de integridade ou proveniência.
+
+Justificativa
+
+A rastreabilidade permite identificar rapidamente quais workloads foram afetados quando uma vulnerabilidade ou comprometimento é identificado em uma dependência, imagem ou componente da cadeia de fornecimento.
+
+⸻
+
+3.9 Gestão de vulnerabilidades
+
+Diretriz
+
+A plataforma deve possuir processo contínuo para identificar vulnerabilidades nos componentes que formam o ambiente de containers.
+
+O processo deve contemplar, conforme aplicável:
+
+* imagens;
+* sistema operacional dos nodes;
+* componentes da plataforma;
+* container runtime;
+* componentes do plano de controle;
+* pacotes e dependências presentes nos workloads.
+
+A identificação de vulnerabilidades não deve ocorrer exclusivamente durante o processo de build.
+
+Artefatos armazenados e workloads em execução devem ser reavaliados periodicamente considerando novas vulnerabilidades descobertas após sua implantação.
+
+Justificativa
+
+Uma imagem considerada segura durante o build pode tornar-se vulnerável posteriormente devido à descoberta de novas vulnerabilidades.
+
+⸻
+
+3.10 Segurança de nodes e infraestrutura
+
+Diretriz
+
+Os hosts responsáveis pela execução de containers devem possuir configuração segura e superfície de ataque mínima.
+
+Nodes devem possuir:
+
+* sistema operacional suportado;
+* processo de atualização;
+* hardening;
+* controle de acesso administrativo;
+* proteção do container runtime;
+* monitoramento;
+* proteção contra alterações não autorizadas.
+
+Workloads não devem possuir acesso direto ao host salvo quando explicitamente requerido, avaliado e aprovado.
+
+A utilização de nodes dedicados ou mecanismos adicionais de isolamento deve ser considerada para workloads de maior criticidade.
+
+Justificativa
+
+Containers compartilham recursos do host. O comprometimento do node pode afetar múltiplos workloads simultaneamente.
+
+⸻
+
+3.11 Segurança em runtime
+
+Diretriz
+
+Ambientes de containers, especialmente ambientes produtivos e críticos, devem possuir capacidade de detecção de ameaças durante runtime.
+
+A capacidade de runtime security deve permitir identificar comportamentos incompatíveis com o comportamento esperado de workloads e containers.
+
+Devem ser monitorados, conforme aplicável:
+
+* execução inesperada de processos;
+* criação de shells;
+* execução de ferramentas administrativas;
+* acesso anômalo a arquivos sensíveis;
+* alteração de arquivos críticos;
+* tentativa de container escape;
+* privilege escalation;
+* utilização indevida de capabilities;
+* acesso ao host;
+* conexões de rede anômalas;
+* comunicação com destinos suspeitos;
+* execução de binários não esperados;
+* utilização indevida de credenciais;
+* atividades associadas a técnicas conhecidas de ataque.
+
+A solução deverá possuir capacidade de geração de eventos para a infraestrutura corporativa de monitoramento de segurança.
+
+Para ambientes de maior criticidade, devem ser avaliadas capacidades automatizadas de contenção ou resposta.
+
+Justificativa
+
+Controles existentes no pipeline representam o estado do artefato antes da implantação.
+
+Ataques podem ocorrer depois que o workload entra em execução.
+
+A segurança da plataforma deve, portanto, possuir capacidade de identificar ameaças que somente se materializam durante runtime.
+
+⸻
+
+3.12 Logging do plano de controle e auditoria
+
+Diretriz
+
+Operações realizadas sobre o plano de controle devem gerar registros de auditoria suficientes para investigação e responsabilização.
+
+Os registros devem permitir identificar, quando aplicável:
+
+* identidade responsável;
+* origem;
+* horário;
+* ação realizada;
+* recurso acessado ou alterado;
+* resultado da operação;
+* operação administrativa executada.
+
+Eventos relevantes do plano de controle devem ser centralizados em solução corporativa de observabilidade e/ou SIEM.
+
+Logs de auditoria devem ser protegidos contra alteração e acesso indevido.
+
+A retenção deverá seguir classificação e requisitos corporativos ou regulatórios.
+
+Justificativa
+
+Sem auditoria do plano de controle, ações administrativas ou maliciosas podem ocorrer sem capacidade adequada de investigação.
+
+⸻
+
+3.13 Logging de containers e workloads
+
+Diretriz
+
+Workloads executados na plataforma devem produzir logs suficientes para monitoramento operacional e investigação de segurança.
+
+A plataforma deve disponibilizar mecanismo padronizado para coleta e encaminhamento de logs de containers.
+
+Os logs devem ser enviados para solução centralizada e não depender exclusivamente do armazenamento local dos nodes ou containers.
+
+Aplicações não devem registrar informações sensíveis, secrets, credenciais ou tokens em logs.
+
+Devem existir padrões corporativos para:
+
+* coleta;
+* transporte;
+* retenção;
+* classificação;
+* proteção;
+* correlação de logs.
+
+Justificativa
+
+Containers são efêmeros e podem desaparecer após reinicialização ou reimplantação.
+
+A centralização dos logs preserva evidências necessárias para troubleshooting, detecção de ameaças e resposta a incidentes.
+
+⸻
+
+3.14 Telemetria de segurança
+
+Diretriz
+
+Além dos logs de aplicação e do plano de controle, a plataforma deve disponibilizar telemetria suficiente para identificar eventos relevantes no ambiente.
+
+A observabilidade deve contemplar, conforme aplicável:
+
+* control plane;
+* nodes;
+* containers;
+* runtime;
+* eventos de autenticação;
+* eventos de autorização;
+* rede;
+* admission control;
+* imagens;
+* vulnerabilidades;
+* soluções de runtime security.
+
+Eventos relevantes devem possuir integração com mecanismos corporativos de correlação, monitoramento e resposta.
+
+Justificativa
+
+Eventos isolados possuem capacidade limitada de identificação de ataques complexos.
+
+A correlação entre identidade, workload, rede e runtime aumenta a capacidade de detecção e investigação.
+
+⸻
+
+3.15 Detecção e resposta a incidentes
+
+Diretriz
+
+Plataformas de containers devem estar integradas aos processos corporativos de Cybersecurity Operations e Incident Response.
+
+Devem existir mecanismos capazes de apoiar ações como:
+
+* identificar o workload afetado;
+* identificar a imagem executada;
+* identificar o node responsável;
+* identificar identidades relacionadas;
+* preservar evidências;
+* isolar workload;
+* bloquear comunicação;
+* remover workload comprometido;
+* revogar credenciais;
+* identificar workloads equivalentes potencialmente afetados.
+
+Procedimentos específicos de resposta a incidentes em ambientes de containers devem ser definidos para ambientes críticos.
+
+Justificativa
+
+A natureza dinâmica e efêmera de containers exige processos específicos para investigação e contenção.
+
+⸻
+
+3.16 Segregação e isolamento de workloads
+
+Diretriz
+
+Workloads devem ser segregados considerando:
+
+* criticidade;
+* ambiente;
+* classificação da informação;
+* exposição;
+* nível de confiança;
+* necessidade de isolamento.
+
+Ambientes produtivos e não produtivos devem possuir segregação apropriada.
+
+Workloads com requisitos de segurança incompatíveis não devem compartilhar recursos de infraestrutura quando isso resultar em risco inadequado.
+
+Workloads de maior criticidade podem exigir nodes dedicados ou mecanismos adicionais de isolamento.
+
+Justificativa
+
+O compartilhamento excessivo de recursos aumenta o impacto potencial de comprometimento e movimentação lateral.
+
+⸻
+
+3.17 Gestão de configuração e drift
+
+Diretriz
+
+Configurações relevantes de segurança da plataforma devem possuir definição controlada e versionada.
+
+Alterações administrativas devem seguir processo formal de mudança.
+
+Sempre que possível, configurações devem ser mantidas como código e possuir mecanismos capazes de identificar desvios em relação ao baseline aprovado.
+
+Alterações manuais em produção devem ser minimizadas.
+
+Justificativa
+
+Mudanças não controladas podem remover controles de segurança e criar diferenças entre o estado aprovado e o ambiente efetivamente executado.
+
+⸻
+
+3.18 Patch, atualização e ciclo de vida
+
+Diretriz
+
+Componentes da plataforma devem permanecer em versões suportadas pelos respectivos fornecedores.
+
+A organização deve manter processo para atualização de:
+
+* plataforma de orquestração;
+* nodes;
+* container runtime;
+* componentes de rede;
+* componentes de segurança;
+* add-ons críticos.
+
+Versões sem suporte não devem permanecer em produção sem processo formal de exceção.
+
+Justificativa
+
+Componentes desatualizados podem conter vulnerabilidades conhecidas sem possibilidade de correção pelo fornecedor.
+
+⸻
+
+3.19 Backup, recuperação e resiliência
+
+Diretriz
+
+Componentes e configurações necessários para recuperação da plataforma devem possuir mecanismos apropriados de backup e restauração.
+
+Os processos de recuperação devem ser testados periodicamente de acordo com a criticidade do ambiente.
+
+Backups contendo informações sensíveis devem possuir controle de acesso e proteção criptográfica.
+
+A arquitetura deve considerar indisponibilidade ou comprometimento da própria plataforma.
+
+Justificativa
+
+Ataques, erros operacionais ou falhas da plataforma podem resultar em perda de configuração ou indisponibilidade dos serviços.
+
+⸻
+
+3.20 Governança, ownership e inventário
+
+Diretriz
+
+Todo ambiente de containers deve possuir proprietário identificado.
+
+A organização deve manter inventário suficiente para identificar:
+
+* clusters;
+* ambientes;
+* responsáveis;
+* workloads;
+* criticidade;
+* versões;
+* exposição;
+* soluções de segurança habilitadas.
+
+Clusters ou plataformas não identificados ou não governados não devem operar workloads corporativos.
+
+Justificativa
+
+A ausência de ownership e inventário dificulta aplicação de patches, investigação, gestão de vulnerabilidades e resposta a incidentes.
+
+⸻
+
+4. Modelo de aplicação do mandate
+
+Este mandate define o que precisa ser protegido.
+
+A implementação técnica deverá ser definida pelos standards e baselines correspondentes.
+
+A hierarquia documental deverá seguir o modelo:
+
+Container Platform Security Mandate
+
+↓
+
+Container Platform Security Standard
+
+↓
+
+Kubernetes Security Standard
+
+↓
+
+Platform Security Baselines
+
+AKS Security Baseline
+EKS Security Baseline
+ARO/OpenShift Security Baseline
+
+↓
+
+Hardening & Implementation Guides
+
+Dessa forma, requisitos corporativos permanecem independentes da tecnologia enquanto os documentos subordinados definem sua implementação.
+
+⸻
+
+5. Critérios mínimos de conformidade
+
+Uma plataforma de containers deverá demonstrar, no mínimo, capacidade de:
+
+IDENTIFY
+
+Manter inventário de clusters, workloads, imagens e responsáveis.
+
+PROTECT
+
+Controlar identidade, privilégios, secrets, rede, workloads, nodes, imagens e configurações.
+
+DETECT
+
+Coletar logs, auditar o plano de controle, monitorar containers e identificar ameaças em runtime.
+
+RESPOND
+
+Correlacionar eventos, investigar comportamentos suspeitos e permitir contenção de workloads comprometidos.
+
+RECOVER
+
+Restaurar configurações e componentes necessários à continuidade da plataforma.
+
+⸻
+
+6. Exceções
+
+Qualquer impossibilidade de atendimento a um requisito deste mandate deverá possuir processo formal de exceção contendo:
+
+* requisito não atendido;
+* justificativa;
+* risco associado;
+* controle compensatório;
+* responsável pela aceitação do risco;
+* prazo de validade;
+* plano de adequação quando aplicável.
+
+Exceções deverão possuir validade determinada e ser revisadas periodicamente.
+
+⸻
+
+7. Responsabilidades
+
+Cybersecurity Architecture
+
+Define requisitos, padrões e capacidades mínimas de segurança.
+
+Container / Cloud Platform
+
+Implementa e mantém os mecanismos técnicos necessários para cumprimento do mandate.
+
+IAM
+
+Provê mecanismos corporativos de identidade, autenticação, autorização e acesso privilegiado.
+
+Security Operations
+
+Monitora eventos, correlaciona alertas e responde a incidentes.
+
+DevSecOps / Application Security
+
+Define e integra controles de segurança relacionados a imagens, dependências, supply chain e pipeline.
+
+Squads consumidoras
+
+Utilizam os controles disponibilizados pela plataforma e mantêm seus workloads aderentes aos standards corporativos.
+
+⸻
+
+8. Referências de segurança
+
+A implementação dos standards e baselines derivados deste mandate deverá considerar frameworks e recomendações reconhecidas pela organização, incluindo, quando aplicável:
+
+* NIST Application Container Security Guide;
+* Kubernetes Security Guidance;
+* CIS Kubernetes Benchmark;
+* recomendações dos fornecedores das plataformas;
+* frameworks e políticas corporativas de Cybersecurity;
+* requisitos regulatórios aplicáveis.
+
+A adoção de uma referência técnica não substitui os requisitos estabelecidos neste mandate.
